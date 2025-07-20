@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dprofiler-worker
+  namespace: dprofiler
+spec:
+  replicas: 2  # Scale workers as needed
+  selector:
+    matchLabels:
+      app: dprofiler-worker
+  template:
+    metadata:
+      labels:
+        app: dprofiler-worker
+    spec:
+      containers:
+      - name: worker
+        image: dprofiler-worker:latest
+        envFrom:
+        - configMapRef:
+            name: dprofiler-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - workers.task_queue.celery_app
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 30
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: dprofiler-worker-hpa
+  namespace: dprofiler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: dprofiler-worker
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80 

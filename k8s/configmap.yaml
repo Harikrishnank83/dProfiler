@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dprofiler-config
+  namespace: dprofiler
+data:
+  DATABASE_URL: "postgresql://dprofiler:password@postgres-service:5432/dprofiler"
+  REDIS_URL: "redis://redis-service:6379/0"
+  SQL_ECHO: "false"
+  LOG_LEVEL: "INFO" 
