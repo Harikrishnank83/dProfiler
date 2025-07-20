@@ -11,4 +11,4 @@ __email__ = "team@dprofiler.dev"
 
 from .cli import main
 
-__all__ = ["main", "__version__"] 
+__all__ = ["main", "__version__"]

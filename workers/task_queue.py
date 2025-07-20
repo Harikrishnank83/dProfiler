@@ -5,10 +5,11 @@ This module configures Celery for distributed task processing
 and provides utilities for task queue management.
 """
 
+import logging
 import os
+
 from celery import Celery
 from celery.schedules import crontab
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ celery_app = Celery(
     "dprofiler",
     broker=CELERY_BROKER_URL,
     backend=CELERY_RESULT_BACKEND,
-    include=["workers.tasks"]
+    include=["workers.tasks"],
 )
 
 # Celery configuration
@@ -33,26 +34,21 @@ celery_app.conf.update(
         "workers.tasks.health_check_task": {"queue": "system"},
         "workers.tasks.cleanup_old_metrics_task": {"queue": "maintenance"},
     },
-    
     # Task serialization
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
-    
     # Task execution
     task_acks_late=True,
     worker_prefetch_multiplier=1,
     task_always_eager=False,
-    
     # Result backend
     result_expires=3600,  # 1 hour
-    
     # Worker configuration
     worker_max_tasks_per_child=1000,
     worker_disable_rate_limits=False,
-    
     # Beat schedule for periodic tasks
     beat_schedule={
         "health-check": {
@@ -65,7 +61,6 @@ celery_app.conf.update(
             "args": (7,),  # Keep 7 days of metrics
         },
     },
-    
     # Logging
     worker_log_format="[%(asctime)s: %(levelname)s/%(processName)s] %(message)s",
     worker_task_log_format="[%(asctime)s: %(levelname)s/%(processName)s][%(task_name)s(%(task_id)s)] %(message)s",
@@ -74,10 +69,10 @@ celery_app.conf.update(
 
 class TaskQueue:
     """Task queue manager for dProfiler."""
-    
+
     def __init__(self):
         self.celery_app = celery_app
-    
+
     async def initialize(self):
         """Initialize the task queue."""
         try:
@@ -87,7 +82,7 @@ class TaskQueue:
         except Exception as e:
             logger.error(f"Failed to initialize task queue: {e}")
             raise
-    
+
     async def shutdown(self):
         """Shutdown the task queue."""
         try:
@@ -96,7 +91,7 @@ class TaskQueue:
             logger.info("Task queue shutdown complete")
         except Exception as e:
             logger.error(f"Error during task queue shutdown: {e}")
-    
+
     async def add_job(self, job_id: str, job_data: dict):
         """Add a profiling job to the queue."""
         try:
@@ -107,18 +102,18 @@ class TaskQueue:
                     job_id,
                     job_data["algorithm_name"],
                     job_data["input_size"],
-                    job_data.get("parameters", {})
+                    job_data.get("parameters", {}),
                 ],
-                queue="profiling"
+                queue="profiling",
             )
-            
+
             logger.info(f"Added job {job_id} to queue with task ID {task.id}")
             return task.id
-            
+
         except Exception as e:
             logger.error(f"Error adding job {job_id} to queue: {e}")
             raise
-    
+
     async def get_task_status(self, task_id: str):
         """Get the status of a task."""
         try:
@@ -132,7 +127,7 @@ class TaskQueue:
         except Exception as e:
             logger.error(f"Error getting task status for {task_id}: {e}")
             return {"task_id": task_id, "status": "unknown", "error": str(e)}
-    
+
     async def cancel_task(self, task_id: str):
         """Cancel a running task."""
         try:
@@ -142,12 +137,12 @@ class TaskQueue:
         except Exception as e:
             logger.error(f"Error cancelling task {task_id}: {e}")
             return False
-    
+
     async def get_queue_stats(self):
         """Get statistics about the task queues."""
         try:
             inspect = self.celery_app.control.inspect()
-            
+
             stats = {
                 "active": inspect.active(),
                 "reserved": inspect.reserved(),
@@ -155,7 +150,7 @@ class TaskQueue:
                 "registered": inspect.registered(),
                 "workers": inspect.stats(),
             }
-            
+
             return stats
         except Exception as e:
             logger.error(f"Error getting queue stats: {e}")
@@ -163,4 +158,4 @@ class TaskQueue:
 
 
 # Global task queue instance
-task_queue = TaskQueue() 
+task_queue = TaskQueue()

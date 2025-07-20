@@ -5,13 +5,14 @@ This module handles database connections, session management,
 and provides utilities for database operations.
 """
 
-import os
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import QueuePool
-from contextlib import contextmanager
 import logging
-from typing import Generator
+import os
+from collections.abc import Generator
+from contextlib import contextmanager
+
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import QueuePool
 
 from .models import Base
 
@@ -19,8 +20,7 @@ logger = logging.getLogger(__name__)
 
 # Database configuration
 DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://dprofiler:password@localhost:5432/dprofiler"
+    "DATABASE_URL", "postgresql://dprofiler:password@localhost:5432/dprofiler"
 )
 
 # Engine configuration
@@ -31,7 +31,7 @@ engine = create_engine(
     max_overflow=20,
     pool_pre_ping=True,
     pool_recycle=3600,
-    echo=os.getenv("SQL_ECHO", "false").lower() == "true"
+    echo=os.getenv("SQL_ECHO", "false").lower() == "true",
 )
 
 # Session factory
@@ -81,22 +81,22 @@ def get_db() -> Generator[Session, None, None]:
 
 class DatabaseManager:
     """Database manager for handling connections and operations."""
-    
+
     def __init__(self):
         self.engine = engine
         self.SessionLocal = SessionLocal
-    
+
     def init_db(self):
         """Initialize the database."""
         create_tables()
         logger.info("Database initialized successfully")
-    
+
     def reset_db(self):
         """Reset the database (drop and recreate tables)."""
         drop_tables()
         create_tables()
         logger.info("Database reset successfully")
-    
+
     def check_connection(self) -> bool:
         """Check if database connection is working."""
         try:
@@ -107,7 +107,7 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Database connection check failed: {e}")
             return False
-    
+
     def get_connection_info(self) -> dict:
         """Get database connection information."""
         return {
@@ -128,17 +128,14 @@ def health_check() -> dict:
     try:
         connection_ok = db_manager.check_connection()
         connection_info = db_manager.get_connection_info()
-        
+
         return {
             "status": "healthy" if connection_ok else "unhealthy",
             "database": {
                 "connected": connection_ok,
-                "connection_info": connection_info
-            }
+                "connection_info": connection_info,
+            },
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
-        return {
-            "status": "unhealthy",
-            "error": str(e)
-        } 
+        return {"status": "unhealthy", "error": str(e)}

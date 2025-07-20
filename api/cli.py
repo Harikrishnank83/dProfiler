@@ -3,9 +3,9 @@
 dProfiler API Command Line Interface
 """
 
+
 import uvicorn
-from typer import Typer, Option
-from typing import Optional
+from typer import Option, Typer
 
 app = Typer(
     name="dprofiler-api",
@@ -36,9 +36,10 @@ def serve(
 @app.command()
 def health() -> None:
     """Check API health"""
-    import httpx
     import sys
-    
+
+    import httpx
+
     try:
         response = httpx.get("http://localhost:8000/health")
         if response.status_code == 200:
@@ -57,7 +58,7 @@ def test() -> None:
     """Run API tests"""
     import subprocess
     import sys
-    
+
     try:
         result = subprocess.run(["pytest", "tests/test_api.py", "-v"], check=True)
         print("✅ API tests passed")
@@ -67,4 +68,4 @@ def test() -> None:
 
 
 if __name__ == "__main__":
-    app() 
+    app()
