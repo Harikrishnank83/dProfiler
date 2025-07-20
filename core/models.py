@@ -249,3 +249,14 @@ class AlgorithmComparisonResponse(BaseModel):
     results: list[ProfilingResultResponse]
     created_at: datetime
     summary: dict[str, Any]
+
+
+class AlgorithmComparisonRequest(BaseModel):
+    """Request model for algorithm comparison."""
+
+    algorithms: list[str] = Field(..., description="List of algorithm names to compare")
+    input_size: int = Field(..., gt=0, description="Size of input data")
+    parameters_list: list[dict[str, Any]] | None = Field(
+        default=None, description="List of parameters for each algorithm"
+    )
+    iterations: int = Field(default=1, ge=1, le=100, description="Number of iterations")

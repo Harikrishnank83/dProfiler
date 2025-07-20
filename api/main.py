@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from core.database import db_manager, get_db, health_check
 from core.models import (
+    AlgorithmComparisonRequest,
     Job,
     JobCreate,
     JobListResponse,
@@ -321,10 +322,7 @@ async def get_system_metrics(
 
 @app.post("/api/v1/compare")
 async def compare_algorithms(
-    algorithms: list[str],
-    input_size: int,
-    parameters_list: list[dict] | None = None,
-    iterations: int = 1,
+    comparison_data: AlgorithmComparisonRequest,
     db: Session = Depends(get_db),
 ):
     """Compare multiple algorithms."""
@@ -334,17 +332,17 @@ async def compare_algorithms(
 
         # Create jobs for each algorithm
         jobs = []
-        for i, algorithm in enumerate(algorithms):
+        for i, algorithm in enumerate(comparison_data.algorithms):
             parameters = (
-                parameters_list[i]
-                if parameters_list and i < len(parameters_list)
+                comparison_data.parameters_list[i]
+                if comparison_data.parameters_list and i < len(comparison_data.parameters_list)
                 else {}
             )
 
             job = Job(
                 job_id=f"{comparison_id}_{algorithm}",
                 algorithm_name=algorithm,
-                input_size=input_size,
+                input_size=comparison_data.input_size,
                 parameters=parameters,
                 status="pending",
             )
@@ -357,13 +355,13 @@ async def compare_algorithms(
         # This would involve running the algorithms and collecting results
 
         logger.info(
-            f"Created comparison {comparison_id} for {len(algorithms)} algorithms"
+            f"Created comparison {comparison_id} for {len(comparison_data.algorithms)} algorithms"
         )
 
         return {
             "comparison_id": comparison_id,
-            "algorithms": algorithms,
-            "input_size": input_size,
+            "algorithms": comparison_data.algorithms,
+            "input_size": comparison_data.input_size,
             "status": "pending",
         }
 

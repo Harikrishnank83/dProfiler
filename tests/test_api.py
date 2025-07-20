@@ -176,8 +176,10 @@ class TestAlgorithmComparison:
 
         data = response.json()
         assert "comparison_id" in data
-        assert "results" in data
-        assert len(data["results"]) == 2
+        assert "algorithms" in data
+        assert "input_size" in data
+        assert "status" in data
+        assert len(data["algorithms"]) == 2
 
 
 # Cleanup after tests
