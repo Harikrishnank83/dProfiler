@@ -8,6 +8,9 @@ import sys
 
 from typer import Argument, Option, Typer
 
+# Import ML CLI
+from dprofiler.ml_cli import app as ml_app
+
 app = Typer(
     name="dprofiler",
     help="Distributed Algorithm Profiling Tool",
@@ -244,6 +247,10 @@ def status() -> None:
 def main() -> None:
     """Main entry point"""
     app()
+
+
+# Add ML commands as a subcommand
+app.add_typer(ml_app, name="ml", help="Machine Learning Algorithm Profiling")
 
 
 if __name__ == "__main__":

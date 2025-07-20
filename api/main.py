@@ -39,6 +39,9 @@ from core.models import (
 from core.profiler import AlgorithmProfiler
 from workers.task_queue import TaskQueue
 
+# Import ML endpoints
+from api.ml_endpoints import router as ml_router
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -101,6 +104,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include ML endpoints
+app.include_router(ml_router)
 
 
 @app.middleware("http")

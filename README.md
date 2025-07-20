@@ -403,6 +403,122 @@ curl http://localhost:8000/api/v1/algorithms
 curl http://localhost:8000/metrics
 ```
 
+## Machine Learning Algorithm Profiling
+
+dProfiler supports profiling machine learning algorithms using distributed computing frameworks:
+
+### Supported Frameworks
+- **scikit-learn**: Traditional ML library for single-machine processing
+- **Dask**: Parallel computing library for analytics
+- **Apache Spark**: Distributed computing system for big data
+- **Ray**: Distributed computing framework for ML and AI
+
+### Supported ML Algorithms
+- **Feature Selection**: Filter, wrapper, and embedded methods
+- **Hyperparameter Tuning**: Grid search, random search, Bayesian optimization
+- **Distributed Training**: Large-scale model training across clusters
+
+### Quick ML Examples
+
+**Feature Selection with Dask:**
+```bash
+dprofiler ml feature-selection --framework dask --dataset-size 50000 --n-features 200
+```
+
+**Hyperparameter Tuning with Ray:**
+```bash
+dprofiler ml hyperparameter-tuning --framework ray --algorithm random_forest
+```
+
+**Framework Comparison:**
+```bash
+dprofiler ml compare-frameworks --algorithm feature_selection
+```
+
+**Check Available Frameworks:**
+```bash
+dprofiler ml available-frameworks
+```
+
+### API Endpoints for ML
+
+**Feature Selection:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/ml/feature-selection" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "filter",
+    "framework": "dask",
+    "dataset_size": 10000,
+    "n_features": 100,
+    "n_select": 20
+  }'
+```
+
+**Hyperparameter Tuning:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/ml/hyperparameter-tuning" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "algorithm": "random_forest",
+    "framework": "ray",
+    "dataset_size": 5000,
+    "n_features": 50
+  }'
+```
+
+**Framework Comparison:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/ml/compare-frameworks" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "algorithm": "feature_selection",
+    "dataset_size": 10000,
+    "n_features": 100
+  }'
+```
+
+### Real-World ML Pipeline Example
+
+```python
+from core.ml_profiler import MLProfiler
+
+# Initialize profiler
+profiler = MLProfiler()
+
+# Step 1: Feature Selection with Dask
+profiler.initialize_dask(n_workers=2)
+feature_result = profiler.profile_feature_selection(
+    method="filter",
+    framework="dask",
+    dataset_size=50000,
+    n_features=200,
+    n_select=50
+)
+
+# Step 2: Hyperparameter Tuning with Ray
+profiler.initialize_ray()
+tuning_result = profiler.profile_hyperparameter_tuning(
+    algorithm="random_forest",
+    framework="ray",
+    dataset_size=25000,
+    n_features=50
+)
+
+# Step 3: Distributed Training with Spark
+profiler.initialize_spark()
+training_result = profiler.profile_distributed_training(
+    algorithm="random_forest",
+    framework="spark",
+    dataset_size=100000,
+    n_features=50
+)
+
+# Get performance summary
+summary = profiler.get_summary()
+print(f"Total pipeline time: {sum(r.execution_time for r in [feature_result, tuning_result, training_result]):.2f}s")
+```
+
 ## CLI Commands
 
 dProfiler provides a comprehensive command-line interface for easy management:
@@ -426,6 +542,12 @@ uv run dprofiler init
 
 # Run tests
 uv run dprofiler test
+
+# ML Algorithm Profiling
+uv run dprofiler ml feature-selection --framework dask
+uv run dprofiler ml hyperparameter-tuning --framework ray
+uv run dprofiler ml compare-frameworks --algorithm feature_selection
+uv run dprofiler ml available-frameworks
 ```
 
 ### Development Commands

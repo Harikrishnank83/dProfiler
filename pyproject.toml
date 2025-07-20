@@ -51,6 +51,14 @@ dependencies = [
     "rich>=13.7.0",
     "click>=8.1.0",
     "typer>=0.9.0",
+    # ML and Distributed Computing dependencies
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "dask[complete]>=2023.8.0",
+    "dask-ml>=2023.3.24",
+    "pyspark>=3.4.0",
+    "ray[tune]>=2.7.0",
 ]
 
 [project.optional-dependencies]
