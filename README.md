@@ -53,7 +53,8 @@ A distributed profiling tool designed to analyze and optimize algorithms across 
 ### Prerequisites
 
 - **Docker and Docker Compose** (for containerized deployment)
-- **Python 3.9+** (for local development)
+- **Python 3.12+** (for local development)
+- **UV** (Python package manager)
 - **Git**
 
 ### Option 1: Docker Compose (Recommended)
@@ -96,9 +97,12 @@ A distributed profiling tool designed to analyze and optimize algorithms across 
    ```bash
    git clone <repository-url>
    cd dProfiler
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
+   
+   # Install UV if not already installed
+   pip install uv
+   
+   # Install dependencies and create virtual environment
+   uv sync
    ```
 
 2. **Start infrastructure services:**
@@ -128,14 +132,18 @@ A distributed profiling tool designed to analyze and optimize algorithms across 
 
 5. **Start services:**
    ```bash
+   # Option A: Using the CLI (recommended)
+   uv run dprofiler start --api --worker
+   
+   # Option B: Manual start
    # Terminal 1: Start API server
-   uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+   uv run uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
    
    # Terminal 2: Start Celery worker
-   celery -A workers.task_queue.celery_app worker --loglevel=info
+   uv run celery -A workers.task_queue.celery_app worker --loglevel=info
    
    # Terminal 3: Start Celery beat (optional)
-   celery -A workers.task_queue.celery_app beat --loglevel=info
+   uv run celery -A workers.task_queue.celery_app beat --loglevel=info
    ```
 
 ### Option 3: Kubernetes Deployment
@@ -395,6 +403,50 @@ curl http://localhost:8000/api/v1/algorithms
 curl http://localhost:8000/metrics
 ```
 
+## CLI Commands
+
+dProfiler provides a comprehensive command-line interface for easy management:
+
+### Basic Commands
+```bash
+# Start the system
+uv run dprofiler start --api --worker
+
+# Check system health
+uv run dprofiler health
+
+# Show system status
+uv run dprofiler status
+
+# Create a profiling job
+uv run dprofiler job bubble_sort 1000
+
+# Initialize database
+uv run dprofiler init
+
+# Run tests
+uv run dprofiler test
+```
+
+### Development Commands
+```bash
+# Install dependencies
+uv run dprofiler install
+
+# Run all tests
+uv run pytest -v
+
+# Format code
+uv run black .
+uv run isort .
+
+# Type checking
+uv run mypy .
+
+# Linting
+uv run ruff check .
+```
+
 ## Monitoring and Observability
 
 ### Health Checks
@@ -417,25 +469,26 @@ curl http://localhost:8000/metrics
 ### Running Tests
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run with coverage
-pytest --cov=.
+uv run pytest --cov=.
 
 # Run specific test file
-pytest tests/test_api.py
+uv run pytest tests/test_api.py
 ```
 
 ### Code Quality
 ```bash
 # Format code
-black .
+uv run black .
+uv run isort .
 
 # Lint code
-flake8 .
+uv run ruff check .
 
 # Type checking
-mypy .
+uv run mypy .
 ```
 
 ### Adding New Algorithms

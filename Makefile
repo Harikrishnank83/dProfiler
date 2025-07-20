@@ -118,9 +118,13 @@ health-worker:
 test: test-api test-integration
 	@echo "✅ All tests completed!"
 
+test-all:
+	@echo "🧪 Running all tests..."
+	uv run pytest -v
+
 test-api:
 	@echo "🧪 Running API tests..."
-	pytest tests/test_api.py -v
+	uv run pytest tests/test_api.py -v
 
 test-integration:
 	@echo "🔗 Running integration tests..."
@@ -147,12 +151,10 @@ test-integration:
 # Local Development Commands
 local-setup:
 	@echo "🔧 Setting up local development environment..."
-	@echo "Creating virtual environment..."
-	python -m venv venv
-	@echo "Activating virtual environment..."
-	@echo "source venv/bin/activate  # On Windows: venv\\Scripts\\activate"
+	@echo "Installing UV if not present..."
+	@which uv > /dev/null || pip install uv
 	@echo "Installing dependencies..."
-	pip install -r requirements.txt
+	uv pip install -e .
 	@echo "Starting infrastructure services..."
 	docker run -d --name dprofiler-postgres \
 		-e POSTGRES_DB=dprofiler \
@@ -168,17 +170,16 @@ local-setup:
 	python -c "from core.database import db_manager; db_manager.init_db()"
 	@echo "✅ Local setup completed!"
 	@echo "Next steps:"
-	@echo "1. source venv/bin/activate"
-	@echo "2. export DATABASE_URL=\"postgresql://dprofiler:password@localhost:5432/dprofiler\""
-	@echo "3. export REDIS_URL=\"redis://localhost:6379/0\""
-	@echo "4. make local-test"
+	@echo "1. export DATABASE_URL=\"postgresql://dprofiler:password@localhost:5432/dprofiler\""
+	@echo "2. export REDIS_URL=\"redis://localhost:6379/0\""
+	@echo "3. make local-test"
 
 local-test:
 	@echo "🧪 Testing local setup..."
 	@echo "Starting API server..."
-	@echo "uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
+	@echo "uv run uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
 	@echo "In another terminal, start Celery worker:"
-	@echo "celery -A workers.task_queue.celery_app worker --loglevel=info"
+	@echo "uv run celery -A workers.task_queue.celery_app worker --loglevel=info"
 	@echo "Then run: make local-health"
 
 local-health:
