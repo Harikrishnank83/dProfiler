@@ -198,6 +198,95 @@ A distributed profiling tool designed to analyze and optimize algorithms across 
            - containerPort: 5432
            volumeMounts:
            - name: postgres-storage
+
+### Option 4: Kubernetes Operator (Production ML Workflows)
+
+For production ML workflows with Kubeflow integration and advanced algorithm profiling:
+
+1. **Install Custom Resource Definitions (CRDs):**
+   ```bash
+   kubectl apply -f k8s/crds/algorithmprofiling.yaml
+   ```
+
+2. **Deploy the dProfiler Operator:**
+   ```bash
+   kubectl apply -f k8s/operator/deployment.yaml
+   ```
+
+3. **Create namespace for ML workloads:**
+   ```bash
+   kubectl create namespace ml-pipeline
+   ```
+
+4. **Apply example workloads:**
+   ```bash
+   kubectl apply -f k8s/examples/algorithm-profiling-examples.yaml
+   ```
+
+5. **Verify operator deployment:**
+   ```bash
+   kubectl get pods -n dprofiler-system
+   kubectl get algorithmprofilings -n ml-pipeline
+   kubectl get algorithmcomparisons -n ml-pipeline
+   ```
+
+**Key Features of the Kubernetes Operator:**
+- **Custom Resources**: `AlgorithmProfiling` and `AlgorithmComparison` CRDs
+- **Kubeflow Integration**: Seamless integration with ML pipelines
+- **Multi-Framework Support**: sklearn, Dask, Spark, Ray
+- **Resource Management**: Automatic resource allocation and cleanup
+- **Production Ready**: Monitoring, alerting, and scaling capabilities
+
+**Example: Create an ML algorithm profiling job:**
+```yaml
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmProfiling
+metadata:
+  name: feature-selection-profiling
+  namespace: ml-pipeline
+spec:
+  algorithmName: feature_selection
+  algorithmType: ml
+  inputSize: 50000
+  mlConfig:
+    framework: dask
+    task: feature_selection
+    datasetSize: 50000
+    nFeatures: 200
+    nSelect: 50
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+```
+
+**Example: Compare multiple frameworks:**
+```yaml
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmComparison
+metadata:
+  name: framework-comparison
+  namespace: ml-pipeline
+spec:
+  algorithms:
+    - name: sklearn_feature_selection
+      type: ml
+      framework: sklearn
+    - name: dask_feature_selection
+      type: ml
+      framework: dask
+    - name: spark_feature_selection
+      type: ml
+      framework: spark
+  inputSize: 10000
+  iterations: 3
+  parallel: true
+```
+
+For detailed usage instructions and real-world examples, see [Kubernetes Operator Documentation](docs/k8s-operator-real-world-usage.md).
              mountPath: /var/lib/postgresql/data
          volumes:
          - name: postgres-storage

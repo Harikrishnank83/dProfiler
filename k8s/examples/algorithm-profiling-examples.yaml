@@ -1,0 +1,271 @@
+---
+# Example 1: Basic Sorting Algorithm Profiling
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmProfiling
+metadata:
+  name: quick-sort-profiling
+  namespace: ml-pipeline
+  labels:
+    app: dprofiler
+    type: sorting
+spec:
+  algorithmName: quick_sort
+  algorithmType: sorting
+  inputSize: 100000
+  iterations: 5
+  priority: 8
+  parameters:
+    pivot_strategy: "median"
+    parallel: true
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  timeout: "30m"
+---
+# Example 2: ML Feature Selection Profiling
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmProfiling
+metadata:
+  name: feature-selection-dask
+  namespace: ml-pipeline
+  labels:
+    app: dprofiler
+    type: ml
+    task: feature_selection
+spec:
+  algorithmName: feature_selection
+  algorithmType: ml
+  inputSize: 50000
+  iterations: 3
+  priority: 7
+  mlConfig:
+    framework: dask
+    task: feature_selection
+    datasetSize: 50000
+    nFeatures: 200
+    nSelect: 50
+    algorithm: random_forest
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+  timeout: "1h"
+---
+# Example 3: ML Hyperparameter Tuning with Ray
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmProfiling
+metadata:
+  name: hyperparameter-tuning-ray
+  namespace: ml-pipeline
+  labels:
+    app: dprofiler
+    type: ml
+    task: hyperparameter_tuning
+spec:
+  algorithmName: hyperparameter_tuning
+  algorithmType: ml
+  inputSize: 10000
+  iterations: 1
+  priority: 9
+  mlConfig:
+    framework: ray
+    task: hyperparameter_tuning
+    datasetSize: 10000
+    nFeatures: 100
+    algorithm: random_forest
+  resources:
+    requests:
+      cpu: "2"
+      memory: "4Gi"
+    limits:
+      cpu: "8"
+      memory: "16Gi"
+  timeout: "2h"
+---
+# Example 4: Custom Algorithm Profiling
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmProfiling
+metadata:
+  name: custom-algorithm-profiling
+  namespace: ml-pipeline
+  labels:
+    app: dprofiler
+    type: custom
+spec:
+  algorithmName: custom_algorithm
+  algorithmType: custom
+  inputSize: 10000
+  iterations: 1
+  priority: 6
+  customConfig:
+    image: "my-registry/custom-algorithm:latest"
+    command: ["python", "/app/run_algorithm.py"]
+    args: ["--input-size", "10000", "--iterations", "1"]
+    env:
+      - name: ALGORITHM_TYPE
+        value: "custom_sort"
+      - name: DEBUG
+        value: "true"
+    volumes:
+      - name: data-volume
+        mountPath: "/data"
+        subPath: "input"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  timeout: "1h"
+---
+# Example 5: Algorithm Comparison (Multiple Frameworks)
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmComparison
+metadata:
+  name: framework-comparison
+  namespace: ml-pipeline
+  labels:
+    app: dprofiler
+    type: comparison
+spec:
+  algorithms:
+    - name: sklearn_feature_selection
+      type: ml
+      framework: sklearn
+      parameters:
+        method: filter
+        n_select: 20
+    - name: dask_feature_selection
+      type: ml
+      framework: dask
+      parameters:
+        method: filter
+        n_select: 20
+    - name: spark_feature_selection
+      type: ml
+      framework: spark
+      parameters:
+        method: filter
+        n_select: 20
+  inputSize: 10000
+  iterations: 3
+  parallel: true
+  timeout: "2h"
+---
+# Example 6: Kubeflow Pipeline Integration
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmProfiling
+metadata:
+  name: kubeflow-pipeline-profiling
+  namespace: kubeflow
+  labels:
+    app: dprofiler
+    type: ml
+    kubeflow-pipeline: "true"
+    pipeline-run: "pipeline-run-123"
+spec:
+  algorithmName: model_training
+  algorithmType: ml
+  inputSize: 100000
+  iterations: 1
+  priority: 10
+  mlConfig:
+    framework: ray
+    task: distributed_training
+    datasetSize: 100000
+    nFeatures: 150
+    algorithm: random_forest
+  resources:
+    requests:
+      cpu: "4"
+      memory: "8Gi"
+    limits:
+      cpu: "16"
+      memory: "32Gi"
+  timeout: "4h"
+---
+# Example 7: Production ML Model Profiling
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmProfiling
+metadata:
+  name: production-model-profiling
+  namespace: production
+  labels:
+    app: dprofiler
+    type: ml
+    environment: production
+    model-version: "v2.1.0"
+spec:
+  algorithmName: production_model
+  algorithmType: custom
+  inputSize: 500000
+  iterations: 1
+  priority: 10
+  customConfig:
+    image: "production-registry/ml-model:2.1.0"
+    command: ["python", "/app/train_model.py"]
+    args: 
+      - "--config"
+      - "/app/config.yaml"
+      - "--data-path"
+      - "/data"
+    env:
+      - name: MODEL_VERSION
+        value: "2.1.0"
+      - name: ENVIRONMENT
+        value: "production"
+      - name: LOG_LEVEL
+        value: "INFO"
+    volumes:
+      - name: model-config
+        mountPath: "/app/config.yaml"
+        subPath: "config.yaml"
+      - name: training-data
+        mountPath: "/data"
+  resources:
+    requests:
+      cpu: "8"
+      memory: "16Gi"
+    limits:
+      cpu: "32"
+      memory: "64Gi"
+  timeout: "8h"
+---
+# Example 8: A/B Testing Algorithm Comparison
+apiVersion: dprofiler.io/v1alpha1
+kind: AlgorithmComparison
+metadata:
+  name: ab-testing-comparison
+  namespace: ml-pipeline
+  labels:
+    app: dprofiler
+    type: comparison
+    ab-test: "true"
+    experiment-id: "exp-456"
+spec:
+  algorithms:
+    - name: baseline_model
+      type: ml
+      framework: sklearn
+      parameters:
+        algorithm: random_forest
+        n_estimators: 100
+    - name: experimental_model
+      type: ml
+      framework: sklearn
+      parameters:
+        algorithm: random_forest
+        n_estimators: 200
+        max_depth: 15
+  inputSize: 50000
+  iterations: 5
+  parallel: false  # Sequential for A/B testing
+  timeout: "3h" 
